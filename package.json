@@ -1,0 +1,47 @@
+{
+  "name": "electron-playground",
+  "version": "1.0.0",
+  "description": "electrono playground",
+  "main": "index.js",
+  "authors": "Miguel Maestre",
+  "scripts": {
+    "start": "electron-forge start",
+    "import": "electron-forge import",
+    "make": "electron-forge make",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "package": "electron-forge package"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.0"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.57",
+    "@electron-forge/maker-deb": "^6.0.0-beta.57",
+    "@electron-forge/maker-rpm": "^6.0.0-beta.57",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.57",
+    "@electron-forge/maker-zip": "^6.0.0-beta.57",
+    "electron": "^13.1.2"
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "name": "CalculadoraApuestas", 
+        "asar": false
+      },
+      "makers": [
+        {
+          "name": "@electron-forge/maker-zip",
+          "config": {
+            "platforms": [
+              "win32"
+            ],
+            "architecture": "x64"
+          }
+        }
+      ]
+    }
+  }
+}
