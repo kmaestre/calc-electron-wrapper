@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activaci&oacute;n</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+        }
+
+        .form {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            display: block;
+            width: 100vw;
+        }
+
+        .form-group {
+            width: 100%;
+            padding: 20px;
+        }
+
+        .form-control {
+            padding: 5px;
+            width: 100%;
+            display: block;
+            border-radius: 5px;
+            border-color: lightgray;
+        }
+
+        button {
+            padding: 5px 10px;
+            margin: auto;
+            display: block;
+            border: 0;
+            border-radius: 3px;
+            font-weight: bold;
+            background-color: rgb(89, 170, 89);
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form">
+        <div class="form-group">
+            <input type="text" name="email" id="email" class="form-control" placeholder="ejemplo@gmail.com">
+        </div>
+        <button id="activation-btn" onclick="validateMail()">Activar</button>
+    </div>
+</body>
+<script>
+
+    let validateMail = async () => {
+        let btn = document.querySelector('#activation-btn')
+        let email = document.querySelector('input#email').value
+        btn.innerText = '...'
+
+        try {
+            let data = await fetch('http://localhost:3000/activate', {
+                method: 'post',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, pcName })
+            }).then(res => res.json())
+            ipcRenderer.invoke('successfull-activation', { email, pcName })
+        } catch (error) {
+            alert(error)
+        }
+    }
+
+</script>
+
+</html>
