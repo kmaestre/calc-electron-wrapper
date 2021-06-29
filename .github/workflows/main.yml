@@ -5,9 +5,7 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
-
 jobs:
-  # This workflow contains a single job called "build"
   build:
     runs-on: windows-latest
     steps:
@@ -27,6 +25,8 @@ jobs:
         with:
           path: out/make/zip/win32/x64/*.zip
       - name: Realease
+        run: |
+          echo "done!"
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           title: release
