@@ -69,15 +69,22 @@
         btn.innerText = '...'
 
         try {
-            let data = await fetch('https://test-validation-calc.herokuapp.com/activate', {
+            let { status } = response = await fetch('https://test-validation-calc.herokuapp.com/activate', {
                 method: 'post',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ email, pcName })
-            }).then(res => res.json())
-            ipcRenderer.invoke('successfull-activation', { email, pcName })
+            })
+
+            if (status == 200) ipcRenderer.invoke('successfull-activation', { email, pcName })
+            else {
+                response.json().then(data => {
+                    alert(data.message, ' ')
+                })
+            }
+
         } catch (error) {
             alert(error)
         }
