@@ -30,7 +30,7 @@ function compareMACs(jsonMACs) {
   let pc = getMACs()
   let res = false
   let i = 0
-  while (!res) {
+  while (!res && i <= pc.length) {
     res = (jsonMACs.indexOf(pc[i]) >= 0) ? true : false
     i++
   }
@@ -73,10 +73,11 @@ app.on('window-all-closed', function () {
 })
 
 app.whenReady().then(() => {
-  if (!fs.existsSync(validationFilePath)) createActivationWindow()
-  else {
+  if (!fs.existsSync(validationFilePath)) {
+    console.log('no validation data')
+    createActivationWindow()
+  } else {
     let validationData = JSON.parse(fs.readFileSync(validationFilePath))
-    
     if (validationData && validationData.deviceName == hostname() && compareMACs(validationData.macs)) {
       createMainWindow()
     } else {
