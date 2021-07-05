@@ -15,7 +15,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.0"
+    "electron-squirrel-startup": "^1.0.0",
+    "yahoo-finance2": "^1.14.0"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.57",

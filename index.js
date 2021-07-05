@@ -5,21 +5,41 @@ const { homedir, hostname, networkInterfaces } = require('os')
 const { execSync } = require('child_process')
 const validationPath = path.join(homedir(), '/AppData/CalculadoraApuestas/')
 const validationFilePath = path.join(validationPath, 'application.json')
+const finance = require('yahoo-finance2').default
 
 function createMainWindow() {
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 460,
+    height: 407,
     title: 'main-window',
-    maximizable: false,
-    show: false
+    maximizable: true,
+    resizable: false,
+    show: false,
+    useContentSize: true,
+    webPreferences: {
+      devTools: false,
+      preload: path.join(__dirname, '/views/main/preload.js')
+    }
   })
 
   win.menuBarVisible = false
-  win.loadFile(path.join(__dirname, '/views/main.html'))
+  win.loadFile(path.join(__dirname, '/views/main/index.html'))
   win.once('ready-to-show', () => {
     win.show()
+    setInterval(async () => {
+      let res = await finance.quote(['PEN=X', 'EUR=X', 'PENUSD=X', 'PENEUR=X'])
+      let currencyObj = {}
+
+      res.forEach(({ regularMarketPrice, symbol }) => {
+        if (symbol == 'PEN=X') currencyObj.USDPEN = { value: regularMarketPrice, symbol }
+        if (symbol == 'EUR=X') currencyObj.USDEUR = { value: regularMarketPrice, symbol }
+        if (symbol == 'PENUSD=X') currencyObj.PENUSD = { value: regularMarketPrice, symbol }
+        if (symbol == 'PENEUR=X') currencyObj.PENEUR = { value: regularMarketPrice, symbol }
+      })
+      win.webContents.postMessage('update-currencies', currencyObj)
+    }, 10000);
   })
+
 }
 
 function getMACs() {
@@ -49,12 +69,12 @@ function createActivationWindow() {
     resizable: false,
     */
     webPreferences: {
-      preload: path.join(__dirname, '/views/preload.js')
+      preload: path.join(__dirname, '/views/activation/preload.js')
     }
   })
 
   win.menuBarVisible = false
-  win.loadFile('./views/activation.html')
+  win.loadFile('./views/activation/activation.html')
   win.once('ready-to-show', () => {
     win.show()
   })
@@ -74,14 +94,13 @@ app.on('window-all-closed', function () {
 
 app.whenReady().then(() => {
   if (!fs.existsSync(validationFilePath)) {
-    console.log('no validation data')
     createActivationWindow()
   } else {
     let validationData = JSON.parse(fs.readFileSync(validationFilePath))
     if (validationData && validationData.deviceName == hostname() && compareMACs(validationData.macs)) {
       createMainWindow()
     } else {
-      dialog.showErrorBox('Error!', 'mamalo perro')
+      dialog.showErrorBox('Error!', 'No puede ejecutar el programa en este equípo. Por favor contactenos')
       app.quit()
     }
   }
