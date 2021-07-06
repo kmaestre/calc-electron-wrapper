@@ -9,8 +9,9 @@ const finance = require('yahoo-finance2').default
 
 function createMainWindow() {
   const win = new BrowserWindow({
-    width: 460,
-    height: 407,
+    width: 700,
+    minWidth: 700,
+    maxWidth: 700,
     title: 'main-window',
     maximizable: true,
     resizable: false,
@@ -22,24 +23,28 @@ function createMainWindow() {
     }
   })
 
+  win.setAspectRatio(4 / 3)
   win.menuBarVisible = false
   win.loadFile(path.join(__dirname, '/views/main/index.html'))
-  win.once('ready-to-show', () => {
+  win.once('ready-to-show', async () => {
     win.show()
-    setInterval(async () => {
-      let res = await finance.quote(['PEN=X', 'EUR=X', 'PENUSD=X', 'PENEUR=X'])
-      let currencyObj = {}
-
-      res.forEach(({ regularMarketPrice, symbol }) => {
-        if (symbol == 'PEN=X') currencyObj.USDPEN = { value: regularMarketPrice, symbol }
-        if (symbol == 'EUR=X') currencyObj.USDEUR = { value: regularMarketPrice, symbol }
-        if (symbol == 'PENUSD=X') currencyObj.PENUSD = { value: regularMarketPrice, symbol }
-        if (symbol == 'PENEUR=X') currencyObj.PENEUR = { value: regularMarketPrice, symbol }
-      })
-      win.webContents.postMessage('update-currencies', currencyObj)
-    }, 10000);
+    await fetchCurrencyData(win)
+    setInterval(() => fetchCurrencyData(win), 60000);
   })
 
+}
+
+async function fetchCurrencyData(win) {
+  let res = await finance.quote(['PEN=X', 'EUR=X', 'PENUSD=X', 'PENEUR=X'])
+  let currencyObj = {}
+
+  res.forEach(({ regularMarketPrice, symbol }) => {
+    if (symbol == 'PEN=X') currencyObj.USDPEN = { value: regularMarketPrice, symbol }
+    if (symbol == 'EUR=X') currencyObj.USDEUR = { value: regularMarketPrice, symbol }
+    if (symbol == 'PENUSD=X') currencyObj.PENUSD = { value: regularMarketPrice, symbol }
+    if (symbol == 'PENEUR=X') currencyObj.PENEUR = { value: regularMarketPrice, symbol }
+  })
+  win.webContents.postMessage('update-currencies', currencyObj)
 }
 
 function getMACs() {
