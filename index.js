@@ -44,6 +44,7 @@ async function fetchCurrencyData(win) {
     if (symbol == 'PENUSD=X') currencyObj.PENUSD = { value: regularMarketPrice, symbol }
     if (symbol == 'PENEUR=X') currencyObj.PENEUR = { value: regularMarketPrice, symbol }
   })
+
   win.webContents.postMessage('update-currencies', currencyObj)
 }
 
