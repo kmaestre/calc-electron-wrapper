@@ -19,7 +19,15 @@ jobs:
       - name: "Install dependencies"
         run: "npm install"
       - name: "Package application"
-        run: 'npm run package & copy "./goat-logo.ico" "./out/Calculadora G.O.A.T-win32-x64/goat-logo.ico"'
+        run: 'npm run package'
+      - name: create package & icon Artifacts
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          path: 
+            goat-logo.ico
+            out/Calculadora G.O.A.T-win32-x64/goat-logo.ico
+      - name: "Copy icon to package folder"
+        run: 'copy "./goat-logo.ico" "./out/Calculadora G.O.A.T-win32-x64/goat-logo.ico'
       - name: "Make application"
         run: 'npm run make'
       - name: Upload a Build Artifact
