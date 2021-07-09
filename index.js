@@ -1,28 +1,30 @@
 const { app, BrowserWindow, dialog, ipcMain } = require('electron')
 const fs = require('fs')
 const path = require('path')
-const { homedir, hostname, networkInterfaces } = require('os')
+const { homedir, hostname } = require('os')
 const { execSync } = require('child_process')
 const validationPath = path.join(homedir(), '/AppData/CalculadoraApuestas/')
 const validationFilePath = path.join(validationPath, 'application.json')
 const finance = require('yahoo-finance2').default
+const { sign, verify } = require('jsonwebtoken')
+
 
 function createMainWindow() {
   const win = new BrowserWindow({
     width: 700,
     minWidth: 700,
     maxWidth: 700,
-    title: 'main-window',
+    title: 'Calculadora',
     maximizable: true,
     resizable: false,
     show: false,
     useContentSize: true,
+    icon: './goat-logo.ico',
     webPreferences: {
       devTools: false,
       preload: path.join(__dirname, '/views/main/preload.js')
     }
   })
-
   win.setAspectRatio(4 / 3)
   win.menuBarVisible = false
   win.loadFile(path.join(__dirname, '/views/main/index.html'))
@@ -35,17 +37,23 @@ function createMainWindow() {
 }
 
 async function fetchCurrencyData(win) {
-  let res = await finance.quote(['PEN=X', 'EUR=X', 'PENUSD=X', 'PENEUR=X'])
-  let currencyObj = {}
+  try {
+    let res = await finance.quote(['PEN=X', 'EUR=X', 'PENUSD=X', 'PENEUR=X'])
+    let currencyObj = {}
 
-  res.forEach(({ regularMarketPrice, symbol }) => {
-    if (symbol == 'PEN=X') currencyObj.USDPEN = { value: regularMarketPrice, symbol }
-    if (symbol == 'EUR=X') currencyObj.USDEUR = { value: regularMarketPrice, symbol }
-    if (symbol == 'PENUSD=X') currencyObj.PENUSD = { value: regularMarketPrice, symbol }
-    if (symbol == 'PENEUR=X') currencyObj.PENEUR = { value: regularMarketPrice, symbol }
-  })
+    res.forEach(({ regularMarketPrice, symbol }) => {
+      if (symbol == 'PEN=X') currencyObj.USDPEN = { value: regularMarketPrice, symbol }
+      if (symbol == 'EUR=X') currencyObj.USDEUR = { value: regularMarketPrice, symbol }
+      if (symbol == 'PENUSD=X') currencyObj.PENUSD = { value: regularMarketPrice, symbol }
+      if (symbol == 'PENEUR=X') currencyObj.PENEUR = { value: regularMarketPrice, symbol }
+    })
 
-  win.webContents.postMessage('update-currencies', currencyObj)
+    win.webContents.postMessage('update-currencies', currencyObj)
+  } catch (err) {
+    win.webContents.postMessage('update-currencies')
+    console.error('could not fetch data from finance')
+  }
+
 }
 
 function getMACs() {
@@ -69,12 +77,13 @@ function createActivationWindow() {
     width: 300,
     height: 150,
     show: false,
-    title: 'activation',
-    /*minimizable: false,
+    title: 'Activación',
+    minimizable: false,
     maximizable: false,
     resizable: false,
-    */
+    icon: './goat-logo.ico',
     webPreferences: {
+      devTools: false,
       preload: path.join(__dirname, '/views/activation/preload.js')
     }
   })
@@ -88,7 +97,7 @@ function createActivationWindow() {
   ipcMain.handle('successfull-activation', (event, { email, pcName }) => {
     let macs = getMACs()
     if (!fs.existsSync(validationPath)) fs.mkdirSync(validationPath)
-    fs.writeFileSync(validationFilePath, `{"email":"${email}","deviceName":"${pcName}", "macs": ${JSON.stringify(macs)}}`)
+    fs.writeFileSync(validationFilePath, sign(`{"email":"${email}","deviceName":"${pcName}", "macs": ${JSON.stringify(macs)}}`, '7414564de855719cfd7a7d6782876f6a'))
     createMainWindow()
     win.close()
   })
@@ -102,7 +111,7 @@ app.whenReady().then(() => {
   if (!fs.existsSync(validationFilePath)) {
     createActivationWindow()
   } else {
-    let validationData = JSON.parse(fs.readFileSync(validationFilePath))
+    let validationData = verify(fs.readFileSync(validationFilePath).toString(), '7414564de855719cfd7a7d6782876f6a')
     if (validationData && validationData.deviceName == hostname() && compareMACs(validationData.macs)) {
       createMainWindow()
     } else {

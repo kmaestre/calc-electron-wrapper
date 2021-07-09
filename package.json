@@ -7,7 +7,7 @@
   "scripts": {
     "start": "electron-forge start",
     "import": "electron-forge import",
-    "make": "electron-forge make",
+    "make": "electron-forge make --skip-package",
     "test": "echo \"Error: no test specified\" && exit 1",
     "package": "electron-forge package"
   },
@@ -16,6 +16,8 @@
   "license": "ISC",
   "dependencies": {
     "electron-squirrel-startup": "^1.0.0",
+    "jose": "^3.14.0",
+    "jsonwebtoken": "^8.5.1",
     "yahoo-finance2": "^1.14.0"
   },
   "devDependencies": {
@@ -29,18 +31,15 @@
   "config": {
     "forge": {
       "packagerConfig": {
-        "name": "CalculadoraApuestas",
-        "asar": true
+        "name": "Calculadora G.O.A.T",
+        "asar": true,
+        "icon": "./goat-logo.ico"
       },
       "makers": [
         {
           "name": "@electron-forge/maker-zip",
-          "config": {
-            "platforms": [
-              "win32"
-            ],
-            "architecture": "x64"
-          }
+          "platforms": ["win32"],
+          "architecture": "x64"
         }
       ]
     }
