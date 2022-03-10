@@ -52,6 +52,10 @@ async function fetchCurrencyData(win) {
 
     win.webContents.postMessage("update-currencies", currencyObj);
   } catch (err) {
+    dialog.showErrorBox(
+      "Error!",
+      "Ocurrio un error al intentar actualizar los valores de las monedas"
+    );
     win.webContents.postMessage("update-currencies");
     console.error("could not fetch data from finance");
   }
