@@ -15,12 +15,12 @@ function createMainWindow() {
     maxWidth: 700,
     title: "Calculadora",
     maximizable: true,
-    resizable: false,
+    resizable: true,
     show: false,
     useContentSize: true,
     icon: "./goat-logo.ico",
     webPreferences: {
-      devTools: false,
+      devTools: true,
       preload: path.join(__dirname, "/views/main/preload.js"),
     },
   });
@@ -125,6 +125,8 @@ app.on("window-all-closed", function () {
 });
 
 app.whenReady().then(() => {
+  createMainWindow();
+  return;
   if (!fs.existsSync(validationFilePath)) {
     createActivationWindow();
   } else {

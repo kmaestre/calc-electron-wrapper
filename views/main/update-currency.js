@@ -1,6 +1,7 @@
 const dispatchEventUpdateCurrencies = (payload) => {
-    if (!payload) return
-    window.dispatchEvent(new CustomEvent('update-currencies', { detail: { data: payload } }))
-}
+  const obj = { detail: { data: payload || null } };
 
-window.updateCurrencies(dispatchEventUpdateCurrencies)
+  window.dispatchEvent(new CustomEvent("update-currencies", obj));
+};
+
+window.updateCurrencies(dispatchEventUpdateCurrencies);
