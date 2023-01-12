@@ -29,8 +29,11 @@ function createMainWindow() {
   win.loadFile(path.join(__dirname, "/views/main/index.html"));
   win.once("ready-to-show", async () => {
     win.show();
-    await fetchCurrencyData(win);
-    setInterval(() => fetchCurrencyData(win), 60000);
+    try {
+      await fetchCurrencyData(win);
+    } finally {
+      setInterval(() => fetchCurrencyData(win), 60000);
+    }
   });
 }
 
@@ -40,24 +43,16 @@ async function fetchCurrencyData(win) {
     let currencyObj = {};
 
     res.forEach(({ regularMarketPrice, symbol }) => {
-      if (symbol == "PEN=X")
-        currencyObj.USDPEN = { value: regularMarketPrice, symbol };
-      if (symbol == "EUR=X")
-        currencyObj.USDEUR = { value: regularMarketPrice, symbol };
-      if (symbol == "PENUSD=X")
-        currencyObj.PENUSD = { value: regularMarketPrice, symbol };
-      if (symbol == "PENEUR=X")
-        currencyObj.PENEUR = { value: regularMarketPrice, symbol };
+      if (symbol == "PEN=X") currencyObj.USDPEN = { value: regularMarketPrice, symbol };
+      if (symbol == "EUR=X") currencyObj.USDEUR = { value: regularMarketPrice, symbol };
+      if (symbol == "PENUSD=X") currencyObj.PENUSD = { value: regularMarketPrice, symbol };
+      if (symbol == "PENEUR=X") currencyObj.PENEUR = { value: regularMarketPrice, symbol };
     });
 
     win.webContents.postMessage("update-currencies", currencyObj);
   } catch (err) {
-    dialog.showErrorBox(
-      "Error!",
-      "Ocurrio un error al intentar actualizar los valores de las monedas"
-    );
+    dialog.showErrorBox("Error!", "Ocurrio un error al intentar actualizar los valores de las monedas");
     win.webContents.postMessage("update-currencies");
-    console.error("could not fetch data from finance");
   }
 }
 
@@ -109,9 +104,7 @@ function createActivationWindow() {
     fs.writeFileSync(
       validationFilePath,
       sign(
-        `{"email":"${email}","deviceName":"${pcName}", "macs": ${JSON.stringify(
-          macs
-        )}}`,
+        `{"email":"${email}","deviceName":"${pcName}", "macs": ${JSON.stringify(macs)}}`,
         "7414564de855719cfd7a7d6782876f6a"
       )
     );
@@ -134,17 +127,10 @@ app.whenReady().then(() => {
       fs.readFileSync(validationFilePath).toString(),
       "7414564de855719cfd7a7d6782876f6a"
     );
-    if (
-      validationData &&
-      validationData.deviceName == hostname() &&
-      compareMACs(validationData.macs)
-    ) {
+    if (validationData && validationData.deviceName == hostname() && compareMACs(validationData.macs)) {
       createMainWindow();
     } else {
-      dialog.showErrorBox(
-        "Error!",
-        "No puede ejecutar el programa en este equípo. Por favor contactenos"
-      );
+      dialog.showErrorBox("Error!", "No puede ejecutar el programa en este equípo. Por favor contactenos");
       app.quit();
     }
   }

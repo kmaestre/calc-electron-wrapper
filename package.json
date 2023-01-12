@@ -18,7 +18,7 @@
     "electron-squirrel-startup": "^1.0.0",
     "jose": "^3.14.0",
     "jsonwebtoken": "^8.5.1",
-    "yahoo-finance2": "^2.3.0"
+    "yahoo-finance2": "^2.3.10"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.57",
