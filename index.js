@@ -20,7 +20,7 @@ function createMainWindow() {
     useContentSize: true,
     icon: "./goat-logo.ico",
     webPreferences: {
-      devTools: true,
+      devTools: false,
       preload: path.join(__dirname, "/views/main/preload.js"),
     },
   });
@@ -64,10 +64,10 @@ function createActivationWindow() {
     title: "Activación",
     minimizable: false,
     maximizable: false,
-    resizable: true,
+    resizable: false,
     icon: "./goat-logo.ico",
     webPreferences: {
-      devTools: true,
+      devTools: false,
       preload: path.join(__dirname, "/views/activation/preload.js"),
     },
   });
