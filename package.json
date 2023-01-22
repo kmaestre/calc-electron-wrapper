@@ -16,7 +16,6 @@
   "license": "ISC",
   "dependencies": {
     "electron-squirrel-startup": "^1.0.0",
-    "jose": "^3.14.0",
     "jsonwebtoken": "^8.5.1",
     "yahoo-finance2": "^2.3.10"
   },
@@ -26,7 +25,8 @@
     "@electron-forge/maker-rpm": "^6.0.0-beta.57",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.57",
     "@electron-forge/maker-zip": "^6.0.0-beta.57",
-    "electron": "^13.1.2"
+    "electron": "^13.1.2",
+    "eslint": "^8.32.0"
   },
   "config": {
     "forge": {

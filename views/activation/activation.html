@@ -1,95 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Activaci&oacute;n</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Activar usuario</title>
     <style>
-        * {
-            padding: 0;
-            margin: 0;
-            box-sizing: border-box;
-        }
+      * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            height: 100vh;
-        }
+      body {
+        height: 100vh;
+      }
 
-        .form {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            display: block;
-            width: 100vw;
-        }
+      .form {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        display: block;
+        width: 100vw;
+      }
 
-        .form-group {
-            width: 100%;
-            padding: 20px;
-        }
+      .form-group {
+        width: 100%;
+        padding: 20px;
+      }
 
-        .form-control {
-            padding: 5px;
-            width: 100%;
-            display: block;
-            border-radius: 5px;
-            border-color: lightgray;
-        }
+      .form-control {
+        width: 100%;
+        display: block;
+        border-radius: 5px;
+        border-color: lightgray;
+        border: 2px solid rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        background-color: white;
+        padding: 10px;
+        font-weight: 400;
+      }
 
-        button {
-            padding: 5px 10px;
-            margin: auto;
-            display: block;
-            border: 0;
-            border-radius: 3px;
-            font-weight: bold;
-            background-color: rgb(89, 170, 89);
-            color: white;
-            cursor: pointer;
-        }
+      button {
+        padding: 10px 20px;
+        margin: auto;
+        display: block;
+        border: 0;
+        border-radius: 3px;
+        font-weight: bold;
+        background-color: black;
+        color: white;
+        cursor: pointer;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div class="form">
-        <div class="form-group">
-            <input type="text" name="email" id="email" class="form-control" placeholder="ejemplo@gmail.com">
-        </div>
-        <button id="activation-btn" onclick="validateMail()">Activar</button>
+      <div class="form-group">
+        <input
+          type="text"
+          name="email"
+          id="email"
+          class="form-control"
+          placeholder="ejemplo@gmail.com"
+          value="maestre@mail.com"
+        />
+      </div>
+      <button id="activation-btn" onclick="validateMail()">Activar</button>
     </div>
-</body>
-<script>
-
+  </body>
+  <script>
     let validateMail = async () => {
-        let btn = document.querySelector('#activation-btn')
-        let email = document.querySelector('input#email').value
-        btn.innerText = '...'
+      let btn = document.querySelector("#activation-btn");
+      let email = document.querySelector("input#email").value;
+      btn.innerText = "...";
 
-        try {
-            let { status } = response = await fetch('https://test-validation-calc.herokuapp.com/activate', {
-                method: 'post',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, pcName })
-            })
+      try {
+        response = await fetch("http://localhost:3000/activate", {
+          method: "post",
+          headers: {
+            "Content-Type": "Application/json",
+            Accept: "Application/json",
+          },
+          body: JSON.stringify({ email, pcName }),
+        });
 
-            if (status == 200) ipcRenderer.invoke('successfull-activation', { email, pcName })
-            else {
-                response.json().then(data => {
-                    alert(data.message, ' ')
-                })
-            }
+        if (response.status == 200) {
+          const uuid = (await response.json()).data.uuid;
 
-        } catch (error) {
-            alert(error)
+          ipcRenderer.invoke("successfull-activation", { email, pcName, uuid });
+        } else {
+          data = await response.json();
+          alert(data.message, " ");
         }
-    }
-
-</script>
-
+      } catch (error) {
+        alert(error);
+      }
+    };
+  </script>
 </html>

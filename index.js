@@ -1,12 +1,12 @@
 const { app, BrowserWindow, dialog, ipcMain } = require("electron");
 const fs = require("fs");
 const path = require("path");
-const { homedir, hostname } = require("os");
-const { execSync } = require("child_process");
-const validationPath = path.join(homedir(), "/AppData/CalculadoraApuestas/");
-const validationFilePath = path.join(validationPath, "application.json");
 const finance = require("yahoo-finance2").default;
 const { sign, verify } = require("jsonwebtoken");
+
+const os = require("os");
+const validationPath = path.join(os.homedir(), "./goataca/");
+const validationFilePath = path.join(validationPath, "application.json");
 
 function createMainWindow() {
   const win = new BrowserWindow({
@@ -56,26 +56,6 @@ async function fetchCurrencyData(win) {
   }
 }
 
-function getMACs() {
-  return execSync("getmac /fo csv /nh", { encoding: "utf-8" })
-    .match(/\"(([A-Z0-9]{2,2})\-)+([A-Z0-9]{2,2})\"/g)
-    .join(",")
-    .replaceAll('"', "")
-    .split(",");
-}
-
-function compareMACs(jsonMACs) {
-  let pc = getMACs();
-  let res = false;
-  let i = 0;
-  while (!res && i <= pc.length) {
-    res = jsonMACs.indexOf(pc[i]) >= 0 ? true : false;
-    i++;
-  }
-
-  return res;
-}
-
 function createActivationWindow() {
   const win = new BrowserWindow({
     width: 300,
@@ -84,10 +64,10 @@ function createActivationWindow() {
     title: "Activación",
     minimizable: false,
     maximizable: false,
-    resizable: false,
+    resizable: true,
     icon: "./goat-logo.ico",
     webPreferences: {
-      devTools: false,
+      devTools: true,
       preload: path.join(__dirname, "/views/activation/preload.js"),
     },
   });
@@ -98,16 +78,10 @@ function createActivationWindow() {
     win.show();
   });
 
-  ipcMain.handle("successfull-activation", (event, { email, pcName }) => {
-    let macs = getMACs();
+  ipcMain.handle("successfull-activation", (event, data) => {
     if (!fs.existsSync(validationPath)) fs.mkdirSync(validationPath);
-    fs.writeFileSync(
-      validationFilePath,
-      sign(
-        `{"email":"${email}","deviceName":"${pcName}", "macs": ${JSON.stringify(macs)}}`,
-        "7414564de855719cfd7a7d6782876f6a"
-      )
-    );
+
+    fs.writeFileSync(validationFilePath, sign(JSON.stringify(data), "7414564de855719cfd7a7d6782876f6a"));
     createMainWindow();
     win.close();
   });
@@ -118,19 +92,18 @@ app.on("window-all-closed", function () {
 });
 
 app.whenReady().then(() => {
-  createMainWindow();
-  return;
   if (!fs.existsSync(validationFilePath)) {
     createActivationWindow();
   } else {
-    let validationData = verify(
+    const { uuid, pcName } = verify(
       fs.readFileSync(validationFilePath).toString(),
       "7414564de855719cfd7a7d6782876f6a"
     );
-    if (validationData && validationData.deviceName == hostname() && compareMACs(validationData.macs)) {
+
+    if (uuid && pcName === os.hostname()) {
       createMainWindow();
     } else {
-      dialog.showErrorBox("Error!", "No puede ejecutar el programa en este equípo. Por favor contactenos");
+      dialog.showErrorBox("Error", "No puede ejecutar el programa en este equípo. Por favor contactenos");
       app.quit();
     }
   }
