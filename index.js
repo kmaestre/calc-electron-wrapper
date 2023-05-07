@@ -39,10 +39,14 @@ function createMainWindow() {
 
 async function fetchCurrencyData(win) {
   try {
-    let res = await finance.quote(["PEN=X", "EUR=X", "PENUSD=X", "PENEUR=X"]);
+    const symbols = ["PEN=X", "EUR=X", "PENUSD=X", "PENEUR=X"];
+    //let res = await finance.quoteSummary(["PEN=X", "EUR=X", "PENUSD=X", "PENEUR=X"]);
+    let res = await Promise.all(symbols.map((s) => finance.quoteSummary(s)));
+
     let currencyObj = {};
 
-    res.forEach(({ regularMarketPrice, symbol }) => {
+    res.forEach(({ price }) => {
+      const { regularMarketPrice, symbol } = price;
       if (symbol == "PEN=X") currencyObj.USDPEN = { value: regularMarketPrice, symbol };
       if (symbol == "EUR=X") currencyObj.USDEUR = { value: regularMarketPrice, symbol };
       if (symbol == "PENUSD=X") currencyObj.PENUSD = { value: regularMarketPrice, symbol };
@@ -51,7 +55,7 @@ async function fetchCurrencyData(win) {
 
     win.webContents.postMessage("update-currencies", currencyObj);
   } catch (err) {
-    dialog.showErrorBox("Error!", "Ocurrio un error al intentar actualizar los valores de las monedas");
+    dialog.showErrorBox("Ocurrio un error al intentar actualizar los valores de las monedas");
     win.webContents.postMessage("update-currencies");
   }
 }
@@ -103,7 +107,7 @@ app.whenReady().then(() => {
     if (uuid && pcName === os.hostname()) {
       createMainWindow();
     } else {
-      dialog.showErrorBox("Error", "No puede ejecutar el programa en este equípo. Por favor contactenos");
+      dialog.showErrorBox("", "No puede ejecutar el programa en este equípo. Por favor contactenos");
       app.quit();
     }
   }
