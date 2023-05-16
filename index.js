@@ -1,12 +1,6 @@
-const { app, BrowserWindow, dialog, ipcMain } = require("electron");
-const fs = require("fs");
+const { app, BrowserWindow, dialog } = require("electron");
 const path = require("path");
 const finance = require("yahoo-finance2").default;
-const { sign, verify } = require("jsonwebtoken");
-
-const os = require("os");
-const validationPath = path.join(os.homedir(), "./goataca/");
-const validationFilePath = path.join(validationPath, "application.json");
 
 function createMainWindow() {
   const win = new BrowserWindow({
@@ -60,55 +54,10 @@ async function fetchCurrencyData(win) {
   }
 }
 
-function createActivationWindow() {
-  const win = new BrowserWindow({
-    width: 300,
-    height: 150,
-    show: false,
-    title: "Activación",
-    minimizable: false,
-    maximizable: false,
-    resizable: false,
-    icon: "./goat-logo.ico",
-    webPreferences: {
-      devTools: false,
-      preload: path.join(__dirname, "/views/activation/preload.js"),
-    },
-  });
-
-  win.menuBarVisible = false;
-  win.loadFile("./views/activation/activation.html");
-  win.once("ready-to-show", () => {
-    win.show();
-  });
-
-  ipcMain.handle("successfull-activation", (event, data) => {
-    if (!fs.existsSync(validationPath)) fs.mkdirSync(validationPath);
-
-    fs.writeFileSync(validationFilePath, sign(JSON.stringify(data), "7414564de855719cfd7a7d6782876f6a"));
-    createMainWindow();
-    win.close();
-  });
-}
-
 app.on("window-all-closed", function () {
   if (process.platform !== "darwin") app.quit();
 });
 
 app.whenReady().then(() => {
-  if (!fs.existsSync(validationFilePath)) {
-    createActivationWindow();
-  } else {
-    const { uuid, pcName } = verify(
-      fs.readFileSync(validationFilePath).toString(),
-      "7414564de855719cfd7a7d6782876f6a"
-    );
-
-    if (uuid && pcName === os.hostname()) {
-      createMainWindow();
-    } else {
-      dialog.showErrorBox("", "No puede ejecutar el programa en este equípo. Por favor contactenos");
-      app.quit();
-    }
-  }
+  createMainWindow();
 });
