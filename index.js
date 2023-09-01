@@ -1,8 +1,8 @@
 const { app, BrowserWindow, dialog } = require("electron");
 const path = require("path");
-const finance = require("yahoo-finance2").default;
+const axios = require("axios");
 
-function createMainWindow() {
+async function createMainWindow() {
   const win = new BrowserWindow({
     width: 700,
     minWidth: 700,
@@ -20,36 +20,50 @@ function createMainWindow() {
   });
   win.setAspectRatio(4 / 3);
   win.menuBarVisible = false;
-  win.loadFile(path.join(__dirname, "/views/main/index.html"));
-  win.once("ready-to-show", async () => {
-    win.show();
-    try {
-      await fetchCurrencyData(win);
-    } finally {
-      setInterval(() => fetchCurrencyData(win), 60000);
-    }
+
+  win.once("ready-to-show", function () {
+    this.show();
+    fetchCurrencyData(this).finally(() => {
+      setInterval(() => {
+        fetchCurrencyData(this).catch((err) => {
+          throw err;
+        });
+      }, 60000);
+    });
   });
+  await win.loadFile(path.join(__dirname, "/views/main/index.html"));
 }
 
 async function fetchCurrencyData(win) {
   try {
-    const symbols = ["PEN=X", "EUR=X", "PENUSD=X", "PENEUR=X"];
-    //let res = await finance.quoteSummary(["PEN=X", "EUR=X", "PENUSD=X", "PENEUR=X"]);
-    let res = await Promise.all(symbols.map((s) => finance.quoteSummary(s)));
+    const { rates: usdRates } = (
+      await axios.get("https://api.exchangerate.host/latest", {
+        params: {
+          base: "USD",
+          symbols: "PEN,EUR",
+        },
+      })
+    ).data;
 
-    let currencyObj = {};
+    const { rates: penRates } = (
+      await axios.get("https://api.exchangerate.host/latest", {
+        params: {
+          base: "PEN",
+          symbols: "USD,EUR",
+        },
+      })
+    ).data;
 
-    res.forEach(({ price }) => {
-      const { regularMarketPrice, symbol } = price;
-      if (symbol == "PEN=X") currencyObj.USDPEN = { value: regularMarketPrice, symbol };
-      if (symbol == "EUR=X") currencyObj.USDEUR = { value: regularMarketPrice, symbol };
-      if (symbol == "PENUSD=X") currencyObj.PENUSD = { value: regularMarketPrice, symbol };
-      if (symbol == "PENEUR=X") currencyObj.PENEUR = { value: regularMarketPrice, symbol };
-    });
+    const currencyObj = {};
+    currencyObj.USDPEN = { value: usdRates.PEN, symbol: "PEN=X" };
+    currencyObj.USDEUR = { value: usdRates.EUR, symbol: "EUR=X" };
+    currencyObj.PENUSD = { value: penRates.USD, symbol: "PENUSD=X" };
+    currencyObj.PENEUR = { value: penRates.EUR, symbol: "PENEUR=X" };
 
     win.webContents.postMessage("update-currencies", currencyObj);
   } catch (err) {
-    dialog.showErrorBox("Ocurrio un error al intentar actualizar los valores de las monedas");
+    console.log(err);
+    dialog.showErrorBox("Ocurrió un error al intentar actualizar los valores de las monedas", "");
     win.webContents.postMessage("update-currencies");
   }
 }
@@ -58,6 +72,6 @@ app.on("window-all-closed", function () {
   if (process.platform !== "darwin") app.quit();
 });
 
-app.whenReady().then(() => {
+app.on("ready", () => {
   createMainWindow();
 });
