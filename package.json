@@ -7,7 +7,7 @@
   "scripts": {
     "start": "electron-forge start",
     "import": "electron-forge import",
-    "make": "electron-forge make --skip-package",
+    "make": "electron-forge make",
     "test": "echo \"Error: no test specified\" && exit 1",
     "package": "electron-forge package"
   },
@@ -15,18 +15,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.5.0",
-    "electron-squirrel-startup": "^1.0.0",
-    "jsonwebtoken": "^8.5.1"
+    "electron-squirrel-startup": "^1.0.0"
   },
   "devDependencies": {
-    "@electron-forge/cli": "^6.0.0-beta.57",
-    "@electron-forge/maker-deb": "^6.0.0-beta.57",
-    "@electron-forge/maker-rpm": "^6.0.0-beta.57",
-    "@electron-forge/maker-squirrel": "^6.0.0-beta.57",
-    "@electron-forge/maker-zip": "^6.0.0-beta.57",
-    "electron": "^13.1.2",
-    "eslint": "^8.32.0"
+    "@electron-forge/cli": "^7.2.0",
+    "@electron-forge/maker-deb": "^7.2.0",
+    "@electron-forge/maker-rpm": "^7.2.0",
+    "@electron-forge/maker-squirrel": "^7.2.0",
+    "@electron-forge/maker-zip": "^7.2.0",
+    "electron": "^28.2.0",
+    "eslint": "^8.56.0"
   },
   "config": {
     "forge": {
